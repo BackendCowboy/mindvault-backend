@@ -18,6 +18,31 @@
 - Pytest for test coverage
 - Docker for containerization
 
+## 📁 Project Structure
+<pre>
+mindvault-backend/
+├── app/
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── config.py
+│   ├── database.py
+│   ├── main.py
+│   ├── models.py
+│   └── routes.py
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   └── test_routes.py
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── Dockerfile
+├── requirements.txt
+├── README.md
+└── .gitignore
+</pre>
+
+
 ## Getting Started
 
 ```bash
