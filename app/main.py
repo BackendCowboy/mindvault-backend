@@ -2,8 +2,10 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.database import engine
-from app.routes import router
+from app.journal_routes import router as journal_router
 from fastapi.openapi.utils import get_openapi
+from app.auth_routes import router as auth_router
+from app.user_routes import router as user_router
 
 app = FastAPI()
 
@@ -38,4 +40,6 @@ def on_startup():
     SQLModel.metadata.create_all(engine)
 
 # Register your router
-app.include_router(router)
+app.include_router(journal_router)
+app.include_router(journal_router)
+app.include_router(user_router)
