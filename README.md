@@ -1,70 +1,55 @@
-# 🧠 MindVault – Personal Growth Tracker API
+# MindVault 🧠
 
-MindVault is a FastAPI-powered backend for a personal growth app. It includes features like mood tracking, journal entry logging, and secure user authentication — all built for introspection, healing, and progress.
+**MindVault** is a personal growth tracker — built with FastAPI and SQLModel — that helps users journal daily, track moods, and reflect on their emotional patterns over time.
 
----
+## Features
 
-## 🚀 Tech Stack
+- ✅ User registration & login (JWT auth)
+- ✅ Create, view, and manage journal entries
+- ✅ Track moods with each entry
+- ✅ 7-day summary route (journal & mood breakdown)
+- ✅ Fully tested with Pytest
+- ✅ Dockerized for deployment
 
-- **Python 3.13**
-- **FastAPI**
-- **SQLModel**
-- **SQLite** (dev) → PostgreSQL (prod-ready)
-- **JWT Authentication**
-- **Pytest** for automated route testing
+## Tech Stack
 
----
+- FastAPI + SQLModel + SQLite
+- JWT authentication
+- Pytest for test coverage
+- Docker for containerization
 
-## 📦 Features
-
-- 🔐 **User Auth** (Register, Login, JWT Tokens)
-- 📓 **Journal Entries** (Create, View, Filter)
-- 🎭 **Mood Tracking** (Tag entries by emotion)
-- 🧪 **Full Test Coverage** for user flow
-
----
-
-## 🧪 Run the Tests
+## Getting Started
 
 ```bash
+# Clone the repo
+git clone https://github.com/BackendCowboy/mindvault-backend.git
+cd mindvault-backend
+
+# Create virtualenv & install deps
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run the app
+uvicorn app.main:app --reload
+
+# Run Tests 
+bash 
 pytest
 
-🛠️ Coming Soon
-	•	🐳 Docker support
-	•	🧪 GitHub Actions CI
-	•	🌐 GraphQL integration
-	•	🧠 Smart mood insights (AI-enhanced)
-	•	📱 React Native frontend
-
-📁 Project Structure
-mindvault-backend/
-├── app/
-│   ├── init.py
-│   ├── auth.py              # Authentication logic (JWT, password hashing)
-│   ├── config.py            # App settings (e.g. secret key, token expiry)
-│   ├── database.py          # DB engine and session
-│   ├── main.py              # FastAPI entry point
-│   ├── models.py            # SQLModel models
-│   └── routes.py            # API endpoints (register, login, journals)
-│
-├── tests/
-│   ├── init.py
-│   ├── conftest.py          # Test fixtures and test DB session
-│   └── test_routes.py       # End-to-end user flow test
-│
-├── journal.db               # SQLite DB (generated)
-├── README.md                # Project overview and usage
-├── requirements.txt         # Dependencies
-└── .gitignore               # Ignored files
-
-🧑‍💻 About the Developer
-
-Built by Aliou — aka the BackendCowboy. Focused on clean architecture, deep learning, and digital healing tools.
-
-## 🚀 Run with Docker
-
-To build and run the app in a Docker container:
-
-```bash
+# Docker
+bash 
 docker build -t mindvault .
 docker run -d -p 8000:8000 mindvault
+
+API Overview 
+	•	POST /register: Create new user
+	•	POST /login: Get JWT token
+	•	POST /journals: Create new entry (auth required)
+	•	GET /journals: List entries (auth required)
+	•	GET /journals/7-day-summary: 7-day mood summary
+
+Roadmap
+	•	Add frontend (React or React Native)
+	•	Smart AI-based journal feedback
+	•	Daily mood reminders
