@@ -1,8 +1,8 @@
 # main.py
 from fastapi import FastAPI
 from sqlmodel import SQLModel
-from database import engine
-from routes import router
+from app.database import engine
+from app.routes import router
 from fastapi.openapi.utils import get_openapi
 
 app = FastAPI()

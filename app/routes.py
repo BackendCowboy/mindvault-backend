@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from sqlalchemy import func 
 from collections import Counter, defaultdict
 
-from models import JournalEntry, UserCreate, UserRead, JournalEntryUpdate
-from database import engine
-from auth import (
+from app.models import JournalEntry, UserCreate, UserRead, JournalEntryUpdate
+from app.database import engine
+from app.auth import (
     get_current_user,
     register_user,
     authenticate_user,

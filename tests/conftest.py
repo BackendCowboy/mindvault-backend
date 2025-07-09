@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
-from main import app
-from database import get_session
+from app.main import app
+from app.database import get_session
 
 # 🧪 Create fresh in-memory test DB
 TEST_DATABASE_URL = "sqlite://"

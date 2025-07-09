@@ -9,7 +9,7 @@ engine = create_engine(sqlite_url, echo=True)
 
 
 def init_db():
-    from models import User, JournalEntry
+    from app.models import User, JournalEntry
     SQLModel.metadata.create_all(engine)
 
 
