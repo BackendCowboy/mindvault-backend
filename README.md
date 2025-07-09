@@ -60,3 +60,11 @@ mindvault-backend/
 🧑‍💻 About the Developer
 
 Built by Aliou — aka the BackendCowboy. Focused on clean architecture, deep learning, and digital healing tools.
+
+## 🚀 Run with Docker
+
+To build and run the app in a Docker container:
+
+```bash
+docker build -t mindvault .
+docker run -d -p 8000:8000 mindvault
