@@ -1,33 +1,37 @@
+# tests/conftest.py
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
+
 from app.main import app
-from app.database import get_session
+from app.database import get_session  # your real dependency
 
-# 🧪 Create fresh in-memory test DB
+# ✅ In-memory test DB engine
 TEST_DATABASE_URL = "sqlite://"
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 
-# ✅ Run once before all tests
-@pytest.fixture(scope="session", autouse=True)
-def setup_db():
-    SQLModel.metadata.create_all(engine)
+# ✅ Reset schema before each test
+@pytest.fixture(autouse=True)
+def setup_and_reset_db():
+    SQLModel.metadata.drop_all(test_engine)
+    SQLModel.metadata.create_all(test_engine)
 
-# ✅ Reset tables before each test function
-@pytest.fixture(scope="function", autouse=True)
-def reset_db():
-    SQLModel.metadata.drop_all(engine)
-    SQLModel.metadata.create_all(engine)
-
+# ✅ Provide test session
 @pytest.fixture()
 def session():
-    with Session(engine) as session:
+    with Session(test_engine) as session:
         yield session
 
+# ✅ Override the app’s get_session to use test session
 @pytest.fixture()
 def client(session):
     def override_get_session():
         yield session
-
     app.dependency_overrides[get_session] = override_get_session
+
+    # 🔍 Print all routes to confirm
+    print("\n📦 LOADED ROUTES:")
+    for r in app.routes:
+        print(r.path)
+
     return TestClient(app)
