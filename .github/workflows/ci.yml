@@ -24,6 +24,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Set up test database
+      run: |
+        python -c "from app.database import create_db_and_tables; create_db_and_tables()"
+
     - name: Run tests
       run: |
-        pytest tests/ --maxfail=1 --disable-warnings -v
+        pytest
