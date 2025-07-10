@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.models import UserCreate, UserRead
 from app.auth import register_user, authenticate_user, create_access_token
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/register", response_model=UserRead)
 def register(user: UserCreate):
