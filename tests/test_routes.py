@@ -10,7 +10,7 @@ def test_user_flow(client):
     }
 
     # 1. Register user
-    res = client.post("/register", json=register_data)
+    res = client.post("/auth/register", json=register_data)
     assert res.status_code == 200
     user = res.json()
     assert user["email"] == register_data["email"]
@@ -20,7 +20,7 @@ def test_user_flow(client):
         "username": register_data["email"],
         "password": register_data["password"]
     }
-    res = client.post("/login", data=login_data)
+    res = client.post("/auth/login", data=login_data)
     assert res.status_code == 200
     token = res.json()["access_token"]
 
@@ -64,14 +64,14 @@ def test_create_journal_missing_fields(client):
         "email": f"testuser_{uuid.uuid4().hex[:6]}@example.com",
         "password": "testpassword"
     }
-    res = client.post("/register", json=register_data)
+    res = client.post("/auth/register", json=register_data)
     assert res.status_code == 200
 
     login_data = {
         "username": register_data["email"],
         "password": register_data["password"]
     }
-    res = client.post("/login", data=login_data)
+    res = client.post("/auth/login", data=login_data)
     token = res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -90,14 +90,14 @@ def test_empty_journal_list(client):
         "email": f"testuser_{uuid.uuid4().hex[:6]}@example.com",
         "password": "testpassword"
     }
-    res = client.post("/register", json=register_data)
+    res = client.post("/auth/register", json=register_data)
     assert res.status_code == 200
 
     login_data = {
         "username": register_data["email"],
         "password": register_data["password"]
     }
-    res = client.post("/login", data=login_data)
+    res = client.post("/auth/login", data=login_data)
     token = res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 

@@ -5,6 +5,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
+from app.schemas import JournalEntryCreate
 
 from app.models import JournalEntry, JournalEntryUpdate
 from app.database import engine
@@ -15,15 +16,20 @@ router = APIRouter(tags=["Journal"])
 
 @router.post("/journals")
 def create_journal(
-    entry: JournalEntry,
+    entry: JournalEntryCreate,
     user=Depends(get_current_user),
 ):
     with Session(engine) as session:
-        entry.user_id = user.id
-        session.add(entry)
+        new_entry = JournalEntry(
+            title=entry.title,
+            content=entry.content,
+            mood=entry.mood,
+            user_id=user.id
+        )
+        session.add(new_entry)
         session.commit()
-        session.refresh(entry)
-        return {"message": "Entry saved", "entry": entry}
+        session.refresh(new_entry)
+        return {"message": "Entry saved", "entry": new_entry}
 
 
 @router.get("/journals", response_model=List[JournalEntry])
