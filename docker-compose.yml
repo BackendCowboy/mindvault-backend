@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build: .
+    container_name: mindvault-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://mindvault_user:mindvault_pass@db:5432/mindvault_db
+      - SECRET_KEY=AbidjanwithLove
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: mindvault-db
+    environment:
+      - POSTGRES_DB=mindvault_db
+      - POSTGRES_USER=mindvault_user
+      - POSTGRES_PASSWORD=mindvault_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mindvault-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@mindvault.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

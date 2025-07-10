@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 
+
 from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.models import User, UserCreate
 from app.database import engine
