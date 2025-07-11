@@ -6,8 +6,11 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
 from app.schemas import JournalEntryCreate
+from slowapi.util import get_remote_address
+from fastapi import Request
+from app.limiter import limiter
 
-from app.models import JournalEntry, JournalEntryUpdate
+from app.models import JournalEntry, JournalEntryUpdate, User
 from app.database import engine
 from app.auth import get_current_user
 
@@ -15,8 +18,10 @@ router = APIRouter(tags=["Journal"])
 
 
 @router.post("/journals")
+@limiter.limit("5/minute")
 def create_journal(
     entry: JournalEntryCreate,
+    request:Request,
     user=Depends(get_current_user),
 ):
     with Session(engine) as session:

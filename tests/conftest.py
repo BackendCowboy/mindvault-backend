@@ -2,7 +2,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
-
+from app.logger import logger
 from app.main import app
 from app.database import get_session  # your real dependency
 
@@ -29,9 +29,9 @@ def client(session):
         yield session
     app.dependency_overrides[get_session] = override_get_session
 
-    # 🔍 Print all routes to confirm
-    print("\n📦 LOADED ROUTES:")
+    # 🔍 Log all routes to confirm
+    logger.info("\n📦 LOADED ROUTES:")
     for r in app.routes:
-        print(r.path)
+        logger.info(r.path)
 
     return TestClient(app)

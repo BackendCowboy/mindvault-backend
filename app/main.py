@@ -1,11 +1,18 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.database import engine
-from app.auth_routes import router as auth_router
-from app.user_routes import router as user_router
-from app.journal_routes import router as journal_router
+from app.routes.auth_routes import router as auth_router
+from app.routes.user_routes import router as user_router
+from app.routes.journal_routes import router as journal_router
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.middleware import SlowAPIMiddleware
+from app.limiter import limiter
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+from fastapi.requests import Request
+
+
 
 app = FastAPI(
     title="MindVault API",
@@ -17,6 +24,12 @@ app = FastAPI(
         {"name": "Journal", "description": "Journal entries & insights"},
     ],
 )
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded. Please try again later."},
+    )
 
 # ✅ Add CORS middleware
 app.add_middleware(
@@ -52,12 +65,10 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# ✅ Auto-create DB tables on startup
-@app.on_event("startup")
-def on_startup():
-    SQLModel.metadata.create_all(engine)
 
 # ✅ Add routers
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(journal_router)
+app.add_middleware(SlowAPIMiddleware)
+app.state.limiter = limiter

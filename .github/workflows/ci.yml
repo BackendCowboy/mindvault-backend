@@ -9,6 +9,20 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: mindvault_user
+          POSTGRES_PASSWORD: mindvault_pass
+          POSTGRES_DB: mindvault_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Checkout code
@@ -23,6 +37,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        until pg_isready -h localhost -p 5432 -U mindvault_user; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+
+    - name: Set env vars for test DB
+      run: |
+        echo "DATABASE_URL=postgresql://mindvault_user:mindvault_pass@localhost:5432/mindvault_db" >> $GITHUB_ENV
+        echo "SECRET_KEY=CI_Test_Secret" >> $GITHUB_ENV
+        echo "ALGORITHM=HS256" >> $GITHUB_ENV
+        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> $GITHUB_ENV
 
     - name: Set up test database
       run: |

@@ -5,6 +5,7 @@ from jose import jwt, JWTError
 from sqlmodel import Session, select
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
+from app.logger import logger
 
 
 from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -15,7 +16,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ← this must match your login path exactly:
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-print(f"OAuth2PasswordBearer configured with tokenUrl: /auth/login")
+logger.info(f"OAuth2PasswordBearer configured with tokenUrl: /auth/login")
 
 
 def hash_password(password: str) -> str:
@@ -31,7 +32,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    print(f"get_current_user called with token: {token[:20] if token else 'None'}...")
+    logger.info(f"get_current_user called with token: {token[:20] if token else 'None'}...")
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Not authenticated",
@@ -39,18 +40,18 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(f"Decoded payload: {payload}") 
+        logger.info(f"Decoded payload: {payload}") 
         email: str = payload.get("sub")
         if not email:
             raise credentials_exception
         with Session(engine) as session:
             user = session.exec(select(User).where(User.email == email)).first()
-            print(f"Found user: {user.email if user else 'None'}")  
+            logger.info(f"Found user: {user.email if user else 'None'}")  
             if not user:
                 raise credentials_exception
             return user
     except JWTError as e:
-        print(f"JWT Error: {e}")  
+        logger.info(f"JWT Error: {e}")  
         raise credentials_exception
 
 def register_user(user_data: UserCreate):

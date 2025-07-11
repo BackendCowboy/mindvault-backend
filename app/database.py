@@ -1,5 +1,6 @@
 from sqlmodel import create_engine, SQLModel, Session
 from app.config import DATABASE_URL, DEBUG
+from app.logger import logger
 
 # Create engine with proper configuration
 if DATABASE_URL.startswith("postgresql"):
@@ -32,5 +33,5 @@ def check_db_connection():
             session.exec("SELECT 1")
         return True
     except Exception as e:
-        print(f"Database connection failed: {e}")
+        logger.info(f"Database connection failed: {e}")
         return False
