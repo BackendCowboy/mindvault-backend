@@ -11,6 +11,7 @@ from app.limiter import limiter
 from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
+from app.routes.ai_routes import router as ai_router
 
 
 
@@ -72,3 +73,4 @@ app.include_router(user_router)
 app.include_router(journal_router)
 app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
+app.include_router(ai_router)

@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
-from app.schemas import JournalEntryCreate
+from app.schemas.journal_schemas import JournalEntryCreate
 from slowapi.util import get_remote_address
 from fastapi import Request
 from app.limiter import limiter
