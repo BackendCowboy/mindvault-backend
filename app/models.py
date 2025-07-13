@@ -17,6 +17,8 @@ class JournalEntry(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    reflection: Optional[str] = Field(default=None)
+
 class UserCreate(SQLModel):
     email: str
     password: str

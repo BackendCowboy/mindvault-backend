@@ -9,6 +9,7 @@ from app.schemas.journal_schemas import JournalEntryCreate
 from slowapi.util import get_remote_address
 from fastapi import Request
 from app.limiter import limiter
+from app.ai.openai_utils import ask_gpt as generate_ai_response
 
 from app.models import JournalEntry, JournalEntryUpdate, User
 from app.database import engine
@@ -17,24 +18,35 @@ from app.auth import get_current_user
 router = APIRouter(tags=["Journal"])
 
 
+from app.ai.openai_utils import ask_gpt as generate_ai_response  # 🔥 Import
+
 @router.post("/journals")
 @limiter.limit("5/minute")
 def create_journal(
     entry: JournalEntryCreate,
-    request:Request,
+    request: Request,
     user=Depends(get_current_user),
 ):
     with Session(engine) as session:
+        # 🧠 Generate reflection using GPT
+        try:
+            prompt = f"Reflect on the following journal entry:\n\nTitle: {entry.title}\nMood: {entry.mood}\nContent:\n{entry.content}"
+            reflection = generate_ai_response(prompt)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"AI reflection failed: {e}")
+
+        # 📦 Save journal + reflection
         new_entry = JournalEntry(
             title=entry.title,
             content=entry.content,
             mood=entry.mood,
+            reflection=reflection,
             user_id=user.id
         )
         session.add(new_entry)
         session.commit()
         session.refresh(new_entry)
-        return {"message": "Entry saved", "entry": new_entry}
+        return {"message": "Entry saved with reflection", "entry": new_entry}
 
 
 @router.get("/journals", response_model=List[JournalEntry])
