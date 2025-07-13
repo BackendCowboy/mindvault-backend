@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
-from app.schemas.journal_schemas import JournalEntryCreate
+from app.schemas.journal_schemas import JournalEntryCreate, JournalEntryResponse 
 from slowapi.util import get_remote_address
 from fastapi import Request
 from app.limiter import limiter
@@ -49,7 +49,7 @@ def create_journal(
         return {"message": "Entry saved with reflection", "entry": new_entry}
 
 
-@router.get("/journals", response_model=List[JournalEntry])
+@router.get("/journals", response_model=List[JournalEntryResponse])
 def get_journals(user=Depends(get_current_user)):
     with Session(engine) as session:
         statement = (
@@ -60,7 +60,7 @@ def get_journals(user=Depends(get_current_user)):
         return session.exec(statement).all()
 
 
-@router.get("/journals/{entry_id}", response_model=JournalEntry)
+@router.get("/journals/{entry_id}", response_model=JournalEntryResponse)
 def get_journal(entry_id: int, user=Depends(get_current_user)):
     with Session(engine) as session:
         entry = session.get(JournalEntry, entry_id)
@@ -99,7 +99,7 @@ def delete_journal(entry_id: int, user=Depends(get_current_user)):
         return {"message": f"Entry {entry_id} deleted"}
 
 
-@router.get("/journals/filter", response_model=List[JournalEntry])
+@router.get("/journals/filter", response_model=List[JournalEntryResponse])
 def filter_journals(
     user=Depends(get_current_user),
     mood: Optional[str] = Query(None, description="Filter by mood"),
