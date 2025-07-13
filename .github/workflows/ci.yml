@@ -9,6 +9,15 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    # ✅ Set environment variables for the test environment here
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      DATABASE_URL: postgresql://mindvault_user:mindvault_pass@localhost:5432/mindvault_db
+      SECRET_KEY: CI_Test_Secret
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
     services:
       postgres:
         image: postgres:15-alpine
@@ -44,13 +53,6 @@ jobs:
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
-
-    - name: Set env vars for test DB
-      run: |
-        echo "DATABASE_URL=postgresql://mindvault_user:mindvault_pass@localhost:5432/mindvault_db" >> $GITHUB_ENV
-        echo "SECRET_KEY=CI_Test_Secret" >> $GITHUB_ENV
-        echo "ALGORITHM=HS256" >> $GITHUB_ENV
-        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> $GITHUB_ENV
 
     - name: Set up test database
       run: |
