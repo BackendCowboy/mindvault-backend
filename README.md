@@ -1,80 +1,147 @@
-# MindVault 🧠
+# 🧠 MindVault — AI-Powered Journal Tracker
 
-**MindVault** is a personal growth tracker — built with FastAPI and SQLModel — that helps users journal daily, track moods, and reflect on their emotional patterns over time.
+MindVault is a backend API that lets users log journal entries, analyze mood trends, and receive AI-generated reflections via OpenAI.
 
-## Features
+---
+Markdown:
+# 🧠 MindVault — AI-Powered Journal Tracker
 
-- ✅ User registration & login (JWT auth)
-- ✅ Create, view, and manage journal entries
-- ✅ Track moods with each entry
-- ✅ 7-day summary route (journal & mood breakdown)
-- ✅ Fully tested with Pytest
-- ✅ Dockerized for deployment
+MindVault is a backend API for journaling with AI-powered reflections. It helps users log thoughts, analyze mood trends, and track mental wellness. Built for developers who care about clarity, growth, and clean backend logic.
 
-## Tech Stack
+---
 
-- FastAPI + SQLModel + SQLite
-- JWT authentication
-- Pytest for test coverage
-- Docker for containerization
+## 🚀 Features
 
-## 📁 Project Structure
-<pre>
-mindvault-backend/
-├── app/
-│   ├── __init__.py
-│   ├── auth.py
-│   ├── config.py
-│   ├── database.py
-│   ├── main.py
-│   ├── models.py
-│   └── routes.py
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py
-│   └── test_routes.py
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── Dockerfile
-├── requirements.txt
-├── README.md
-└── .gitignore
-</pre>
+- 🔐 **JWT Authentication** (Register/Login)
+- 📓 **CRUD Journal Entries**
+- 🤖 **OpenAI GPT**-Generated Reflections
+- 📊 **Mood Tracking**, **7-Day Summaries**, **Stats**, and **Streaks**
+- 🔎 Filter by **mood**, **search**, and **date**
+- 🧱 Rate limiting with `slowapi`
+- 🐳 **Dockerized**: FastAPI + PostgreSQL + pgAdmin
+- 🔄 **Alembic Migrations**
+- ✅ **Pytest** suite for auth and journals
 
+---
 
-## Getting Started
+## 🧱 Tech Stack
+
+- **Python 3.11**
+- **FastAPI** + **SQLModel**
+- **PostgreSQL** (via Docker)
+- **Alembic** for migrations
+- **OpenAI GPT-3.5+** (for reflections)
+- **Docker + Docker Compose**
+- **Pytest** for testing
+
+---
+
+## 📦 Installation
+
+### 1. Clone the repo
 
 ```bash
-# Clone the repo
-git clone https://github.com/BackendCowboy/mindvault-backend.git
+git clone https://github.com/YOUR_USERNAME/mindvault-backend.git
 cd mindvault-backend
 
-# Create virtualenv & install deps
+2. Create .env file
+
+Create a .env file at the root with the following:
+env
+OPENAI_API_KEY=your-openai-api-key
+SECRET_KEY=your-super-secret-key
+DATABASE_URL=postgresql://postgres:password@localhost:5432/mindvault
+
+3. Create virtual environment & install dependencies
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Run the app
+4. Run Alembic migrations
+```bash
+alembic upgrade head
+
+5. Start the app
+```bash
 uvicorn app.main:app --reload
+App will be available at: http://127.0.0.1:8000
 
-# Run Tests 
-bash 
-pytest
+🐳 Running with Docker
 
-# Docker
-bash 
-docker build -t mindvault .
-docker run -d -p 8000:8000 mindvault
+1. Start PostgreSQL + pgAdmin + API
+```bash
+docker-compose up --build
+This will:
+	•	Launch PostgreSQL container (mindvault-db)
+	•	Launch pgAdmin for DB visualization (at port 5050)
+	•	Run your FastAPI backend
 
-API Overview 
-	•	POST /register: Create new user
-	•	POST /login: Get JWT token
-	•	POST /journals: Create new entry (auth required)
-	•	GET /journals: List entries (auth required)
-	•	GET /journals/7-day-summary: 7-day mood summary
+2. Apply Alembic migrations inside the container
+```bash 
+docker-compose exec mindvault-api alembic upgrade head
 
-Roadmap
-	•	Add frontend (React or React Native)
-	•	Smart AI-based journal feedback
-	•	Daily mood reminders
+
+🧪 Running Tests
+```bash 
+pytest 
+
+🧠 Example: Create Journal Entry (with GPT reflection)
+```bash
+curl -X POST http://127.0.0.1:8000/journals \
+-H "Authorization: Bearer <your_token>" \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "A Calm Morning",
+  "content": "Woke up and felt grounded. Went for a walk and did breathwork.",
+  "mood": "peaceful"
+}'
+
+📁 Project Structure
+mindvault-backend/
+│
+├── app/
+│   ├── ai/                   # OpenAI utils
+│   ├── routes/               # Route modules
+│   ├── schemas/              # Pydantic schemas
+│   ├── models.py             # SQLModel models
+│   ├── auth.py               # JWT + auth
+│   ├── database.py           # DB engine
+│   ├── limiter.py            # Rate limiter
+│   ├── config.py             # Env config
+│   └── main.py               # FastAPI app entrypoint
+│
+├── alembic/                  # Migrations
+│   └── versions/             # Versioned migration files
+│
+├── tests/                    # Pytest test suite
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+├── README.md
+└── .env                      # Your secrets (not committed)
+
+🔐 Authentication
+	•	Register: POST /auth/register
+	•	Login: POST /auth/login → returns access_token
+	•	Use Authorization: Bearer <token> header for protected routes
+
+⸻
+
+🧠 AI Reflections
+
+Journals use OpenAI to generate self-reflective content using your entry’s title, mood, and body. Ensure your OPENAI_API_KEY is valid and you have credits.
+
+⸻
+
+🛠 Dev Notes
+	•	Run alembic revision --autogenerate -m "your message" to generate migrations
+	•	Use .env to store sensitive credentials
+	•	Use reset_db.sh (optional) to nuke and reset the DB locally
+
+⸻
+
+❤️ Built With Purpose
+
+MindVault was crafted to help you reflect, grow, and track your mental clarity — one journal entry at a time.
+
