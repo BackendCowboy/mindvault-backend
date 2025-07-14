@@ -12,6 +12,7 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from app.routes.ai_routes import router as ai_router
+from app.error_handlers import register_exception_handlers
 
 
 
@@ -25,6 +26,9 @@ app = FastAPI(
         {"name": "Journal", "description": "Journal entries & insights"},
     ],
 )
+
+register_exception_handlers(app)
+
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
