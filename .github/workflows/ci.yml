@@ -1,20 +1,23 @@
-name: CI
+name: MindVault CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+env:
+  PYTHON_VERSION: "3.11"
 
-    # ✅ Set environment variables for the test environment here
+jobs:
+  test:
+    name: 🧪 Tests & Quality Checks
+    runs-on: ubuntu-latest
+    
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       DATABASE_URL: postgresql://mindvault_user:mindvault_pass@localhost:5432/mindvault_db
-      SECRET_KEY: CI_Test_Secret
+      SECRET_KEY: CI_Test_Secret_Key_At_Least_32_Characters
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
 
@@ -34,30 +37,213 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout code
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
       uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
 
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pytest-cov black flake8 bandit safety
 
-    - name: Wait for PostgreSQL to be ready
+    - name: ⏳ Wait for PostgreSQL
       run: |
         until pg_isready -h localhost -p 5432 -U mindvault_user; do
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
 
-    - name: Set up test database
+    - name: 🗄️ Set up test database
       run: |
         python -c "from app.database import create_db_and_tables; create_db_and_tables()"
 
-    - name: Run tests
+    - name: 🔍 Run database migrations
       run: |
-        pytest
+        alembic upgrade head
+
+    - name: ✨ Code formatting check
+      run: |
+        black --check --diff app/ tests/
+
+    - name: 🔍 Linting check
+      run: |
+        flake8 app/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+
+    - name: 🛡️ Security scan - Bandit
+      run: |
+        bandit -r app/ -f json -o bandit-report.json || true
+
+    - name: 🔒 Dependency vulnerability check
+      run: |
+        safety check --json --output safety-report.json || true
+
+    - name: 🧪 Run tests with coverage
+      run: |
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=html
+
+    - name: 📊 Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  docker:
+    name: 🐳 Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🔨 Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: mindvault:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: 🏥 Test Docker health check
+      run: |
+        # Start container with test config
+        docker run -d --name mindvault-test -p 8000:8000 \
+          -e DATABASE_URL=sqlite:///./test.db \
+          -e SECRET_KEY=test-secret-key-for-docker \
+          -e OPENAI_API_KEY=sk-test-key \
+          mindvault:test
+        
+        # Wait for container to be ready
+        echo "Waiting for container to start..."
+        sleep 20
+        
+        # Test health endpoint
+        echo "Testing health endpoint..."
+        curl -f http://localhost:8000/health || exit 1
+        
+        # Test detailed health endpoint
+        echo "Testing detailed health endpoint..."
+        curl -f http://localhost:8000/health/detailed || exit 1
+        
+        # Cleanup
+        docker stop mindvault-test
+        docker rm mindvault-test
+
+    - name: 📋 Docker image summary
+      run: |
+        echo "✅ Docker build successful"
+        echo "✅ Health checks passing"
+        echo "🚀 Ready for deployment"
+
+  security:
+    name: 🔒 Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 📦 Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: 🛡️ Run Bandit security scan
+      run: |
+        bandit -r app/ -f json -o bandit-report.json
+        echo "Bandit scan completed"
+
+    - name: 🔍 Check for known vulnerabilities
+      run: |
+        safety check --json --output safety-report.json
+        echo "Safety check completed"
+
+  api-test:
+    name: 🌐 API Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    env:
+      DATABASE_URL: sqlite:///./test.db
+      SECRET_KEY: test-secret-key-for-api-tests
+      OPENAI_API_KEY: sk-test-key
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt httpx
+
+    - name: 🚀 Start API server
+      run: |
+        python -c "from app.database import create_db_and_tables; create_db_and_tables()"
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        echo "API server started"
+        
+    - name: ⏳ Wait for API to be ready
+      run: |
+        for i in {1..30}; do
+          if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+            echo "API is ready!"
+            break
+          fi
+          echo "Waiting for API... ($i/30)"
+          sleep 2
+        done
+
+    - name: 🧪 Test API endpoints
+      run: |
+        echo "Testing health endpoints..."
+        curl -f http://localhost:8000/health
+        curl -f http://localhost:8000/health/detailed
+        curl -f http://localhost:8000/health/ready
+        curl -f http://localhost:8000/health/live
+        
+        echo "Testing API documentation..."
+        curl -f http://localhost:8000/docs > /dev/null
+        
+        echo "✅ All API tests passed!"
+
+  summary:
+    name: 📊 Build Summary
+    runs-on: ubuntu-latest
+    needs: [test, docker, security, api-test]
+    if: always()
+    
+    steps:
+    - name: 📋 Generate summary
+      run: |
+        echo "## 🚀 MindVault CI/CD Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| 🧪 Tests & Quality | ${{ needs.test.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🐳 Docker Build | ${{ needs.docker.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🔒 Security Scan | ${{ needs.security.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🌐 API Tests | ${{ needs.api-test.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🎯 Ready for deployment!" >> $GITHUB_STEP_SUMMARY
