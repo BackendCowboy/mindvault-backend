@@ -1,147 +1,402 @@
-# 🧠 MindVault — AI-Powered Journal Tracker
+# 🧠 MindVault — AI-Powered Journal API
 
-MindVault is a backend API that lets users log journal entries, analyze mood trends, and receive AI-generated reflections via OpenAI.
+> **Production-ready FastAPI backend showcasing enterprise-level architecture, AI integration, and comprehensive DevOps practices.**
 
----
-Markdown:
-# 🧠 MindVault — AI-Powered Journal Tracker
+[![Health Check](https://img.shields.io/badge/health-✅%20passing-brightgreen)](http://localhost:8000/health)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.0-009688.svg)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-✅%20Multi--stage-2496ED.svg)](https://docker.com)
 
-MindVault is a backend API for journaling with AI-powered reflections. It helps users log thoughts, analyze mood trends, and track mental wellness. Built for developers who care about clarity, growth, and clean backend logic.
-
----
-
-## 🚀 Features
-
-- 🔐 **JWT Authentication** (Register/Login)
-- 📓 **CRUD Journal Entries**
-- 🤖 **OpenAI GPT**-Generated Reflections
-- 📊 **Mood Tracking**, **7-Day Summaries**, **Stats**, and **Streaks**
-- 🔎 Filter by **mood**, **search**, and **date**
-- 🧱 Rate limiting with `slowapi`
-- 🐳 **Dockerized**: FastAPI + PostgreSQL + pgAdmin
-- 🔄 **Alembic Migrations**
-- ✅ **Pytest** suite for auth and journals
+MindVault is a sophisticated journaling API that demonstrates **advanced backend engineering skills** through AI-powered insights, comprehensive monitoring, production-ready architecture, and modern DevOps practices.
 
 ---
 
-## 🧱 Tech Stack
+## 🎯 **Engineering Highlights**
 
-- **Python 3.11**
-- **FastAPI** + **SQLModel**
-- **PostgreSQL** (via Docker)
-- **Alembic** for migrations
-- **OpenAI GPT-3.5+** (for reflections)
-- **Docker + Docker Compose**
-- **Pytest** for testing
+### **🏗️ Architecture & Design**
+- **Modular FastAPI Architecture** - Clean separation of concerns with routes, schemas, and services
+- **Type-Safe Database Layer** - SQLModel with Pydantic validation and automatic API documentation
+- **AI Integration Pipeline** - OpenAI GPT for intelligent journal reflections and analysis
+- **Advanced Analytics Engine** - Complex SQL queries for mood trends, streaks, and behavioral insights
+
+### **🚀 DevOps & Production Features** 
+- **Production Health Monitoring** - Comprehensive endpoints with system metrics and database status
+- **Multi-Stage Docker Builds** - Optimized containers with security hardening and non-root users
+- **Database Migration Management** - Alembic for version-controlled schema evolution
+- **Security-First Design** - JWT authentication, rate limiting, input validation, and CORS protection
 
 ---
 
-## 📦 Installation
+## 🛠️ **Technical Stack**
 
-### 1. Clone the repo
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Framework** | FastAPI 0.116 | High-performance async web framework |
+| **Database** | PostgreSQL 15 | Production database with connection pooling |
+| **ORM** | SQLModel | Type-safe database operations |
+| **AI** | OpenAI GPT | Intelligent content analysis and reflections |
+| **Auth** | JWT + Passlib | Secure token-based authentication |
+| **Caching** | slowapi | Redis-compatible rate limiting |
+| **Containerization** | Docker + Compose | Multi-stage production builds |
+| **Migrations** | Alembic | Database schema version control |
+| **Testing** | Pytest | Comprehensive test coverage |
+| **Monitoring** | Custom Health Checks | System and database monitoring |
+
+---
+
+## 🚀 **Quick Start**
+
+### **🐳 Docker Deployment (Recommended)**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/mindvault-backend.git
+# Clone and navigate
+git clone https://github.com/yourusername/mindvault-backend.git
 cd mindvault-backend
 
-2. Create .env file
+# Start all services (PostgreSQL + API + pgAdmin)
+docker-compose up --build -d
 
-Create a .env file at the root with the following:
-env
-OPENAI_API_KEY=your-openai-api-key
-SECRET_KEY=your-super-secret-key
-DATABASE_URL=postgresql://postgres:password@localhost:5432/mindvault
+# Verify health status
+curl http://localhost:8000/health/detailed
 
-3. Create virtual environment & install dependencies
+# Apply database migrations
+docker-compose exec api alembic upgrade head
+
+# Access interactive API docs
+open http://localhost:8000/docs
+```
+
+### **💻 Local Development**
+
 ```bash
+# Set up environment
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-4. Run Alembic migrations
-```bash
+# Configure environment
+cp .env.example .env
+# Edit .env with your OpenAI API key and database settings
+
+# Run migrations and start server
 alembic upgrade head
-
-5. Start the app
-```bash
 uvicorn app.main:app --reload
-App will be available at: http://127.0.0.1:8000
+```
 
-🐳 Running with Docker
+---
 
-1. Start PostgreSQL + pgAdmin + API
+## 📊 **API Architecture**
+
+### **🔐 Authentication System**
 ```bash
-docker-compose up --build
-This will:
-	•	Launch PostgreSQL container (mindvault-db)
-	•	Launch pgAdmin for DB visualization (at port 5050)
-	•	Run your FastAPI backend
+# Register new user
+POST /auth/register
+{
+  "email": "user@example.com",
+  "password": "secure_password"
+}
 
-2. Apply Alembic migrations inside the container
-```bash 
-docker-compose exec mindvault-api alembic upgrade head
+# Login and receive JWT token
+POST /auth/login
+# Returns: {"access_token": "eyJ...", "token_type": "bearer"}
+```
 
-
-🧪 Running Tests
-```bash 
-pytest 
-
-🧠 Example: Create Journal Entry (with GPT reflection)
+### **📝 Journal Management**
 ```bash
-curl -X POST http://127.0.0.1:8000/journals \
--H "Authorization: Bearer <your_token>" \
--H "Content-Type: application/json" \
--d '{
-  "title": "A Calm Morning",
-  "content": "Woke up and felt grounded. Went for a walk and did breathwork.",
+# Create journal entry with AI reflection
+POST /journals
+Authorization: Bearer <token>
+{
+  "title": "Morning Reflection",
+  "content": "Started the day with meditation and feel centered.",
   "mood": "peaceful"
-}'
+}
+# Automatically generates AI-powered reflection via OpenAI
+```
 
-📁 Project Structure
+### **📈 Advanced Analytics**
+```bash
+# Get comprehensive statistics
+GET /journals/stats
+# Returns: total entries, word counts, most common moods, writing patterns
+
+# Analyze mood trends over time
+GET /journals/mood-trends
+# Returns: daily mood distribution with temporal analysis
+
+# Track writing streaks and habits
+GET /journals/streak
+# Returns: current streak, longest streak, consistency metrics
+```
+
+### **🔍 Powerful Search & Filtering**
+```bash
+# Advanced filtering with pagination
+GET /journals/filter?mood=happy&search=meditation&limit=10&offset=0
+# Supports: mood filtering, full-text search, date ranges, pagination
+```
+
+---
+
+## 💡 **Advanced Features**
+
+### **🤖 AI-Powered Insights**
+- **Smart Reflections**: OpenAI GPT analyzes journal entries and provides personalized insights
+- **Mood Analysis**: Intelligent sentiment detection and trend analysis
+- **Content Enhancement**: AI suggests themes and patterns in writing
+
+### **📊 Analytics Dashboard Data**
+- **Writing Statistics**: Word counts, entry frequency, time-based patterns
+- **Mood Tracking**: Emotional trends with statistical analysis
+- **Habit Formation**: Streak tracking and consistency metrics
+- **Behavioral Insights**: Weekly summaries and long-term trends
+
+### **🔒 Production Security**
+- **JWT Authentication**: Secure token-based user sessions
+- **Rate Limiting**: Protection against API abuse with slowapi
+- **Input Validation**: Comprehensive Pydantic schema validation
+- **CORS Protection**: Configurable cross-origin resource sharing
+- **Container Security**: Non-root users and minimal attack surface
+
+---
+
+## 🏥 **Health Monitoring & Observability**
+
+### **System Health Endpoints**
+
+```bash
+# Basic health check
+curl http://localhost:8000/health
+# {"status": "healthy", "timestamp": "2025-07-25T14:41:04Z", "service": "MindVault API"}
+
+# Comprehensive system status
+curl http://localhost:8000/health/detailed
+# Returns: database status, memory usage, disk space, system info
+```
+
+**Sample Detailed Health Response:**
+```json
+{
+  "status": "healthy",
+  "service": "MindVault API",
+  "version": "1.0.0",
+  "checks": {
+    "database": {"status": "healthy", "type": "postgresql"},
+    "memory": {"status": "healthy", "usage_percent": 28.2, "available_mb": 2814.54},
+    "disk": {"status": "healthy", "usage_percent": 1.9, "free_gb": 208.14}
+  },
+  "environment": {
+    "python_version": "3.11.13",
+    "platform": "posix"
+  }
+}
+```
+
+### **Kubernetes-Ready Probes**
+```bash
+# Readiness probe - is the app ready to serve traffic?
+GET /health/ready
+
+# Liveness probe - is the app still alive?
+GET /health/live
+```
+
+---
+
+## 🧪 **Testing & Quality Assurance**
+
+```bash
+# Run comprehensive test suite
+pytest -v
+
+# Generate coverage report
+pytest --cov=app --cov-report=html
+
+# Test specific modules
+pytest tests/test_auth.py tests/test_journals.py -v
+```
+
+**Test Coverage Areas:**
+- ✅ Authentication flows and JWT validation
+- ✅ CRUD operations for journal entries
+- ✅ AI integration and reflection generation
+- ✅ Analytics and filtering endpoints
+- ✅ Health monitoring systems
+- ✅ Error handling and edge cases
+
+---
+
+## 🐳 **Production Docker Architecture**
+
+### **Multi-Stage Build Optimization**
+
+```dockerfile
+# Build stage - includes compilation dependencies
+FROM python:3.11-slim as builder
+RUN apt-get update && apt-get install -y gcc python3-dev
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Production stage - minimal runtime image
+FROM python:3.11-slim as production
+# Copy only compiled packages, not build tools
+# Non-root user for security
+# Health check integration
+```
+
+### **Container Security Features**
+- **Non-root execution**: App runs as dedicated user with minimal privileges
+- **Minimal base image**: Python slim for reduced attack surface
+- **Health checks**: Built-in container health monitoring
+- **Resource optimization**: Multi-stage builds for smaller production images
+
+---
+
+## 📁 **Professional Project Structure**
+
+```
 mindvault-backend/
-│
 ├── app/
-│   ├── ai/                   # OpenAI utils
-│   ├── routes/               # Route modules
-│   ├── schemas/              # Pydantic schemas
-│   ├── models.py             # SQLModel models
-│   ├── auth.py               # JWT + auth
-│   ├── database.py           # DB engine
-│   ├── limiter.py            # Rate limiter
-│   ├── config.py             # Env config
-│   └── main.py               # FastAPI app entrypoint
-│
-├── alembic/                  # Migrations
-│   └── versions/             # Versioned migration files
-│
-├── tests/                    # Pytest test suite
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-├── README.md
-└── .env                      # Your secrets (not committed)
+│   ├── routes/              # Modular API endpoints
+│   │   ├── auth_routes.py   # Authentication endpoints
+│   │   ├── journal_routes.py # Journal CRUD + analytics
+│   │   ├── health_routes.py # System monitoring
+│   │   └── ai_routes.py     # AI integration endpoints
+│   ├── schemas/             # Pydantic models for validation
+│   ├── ai/                  # OpenAI integration utilities
+│   ├── models.py           # SQLModel database models
+│   ├── auth.py             # JWT authentication logic
+│   ├── database.py         # Database connection management
+│   ├── config.py           # Environment configuration
+│   └── main.py             # FastAPI application factory
+├── tests/                  # Comprehensive test suite
+├── alembic/                # Database migrations
+├── docker-compose.yml      # Multi-service orchestration
+├── Dockerfile             # Multi-stage production build
+└── requirements.txt       # Dependency management
+```
 
-🔐 Authentication
-	•	Register: POST /auth/register
-	•	Login: POST /auth/login → returns access_token
-	•	Use Authorization: Bearer <token> header for protected routes
+---
 
-⸻
+## 🔧 **Configuration Management**
 
-🧠 AI Reflections
+### **Environment Variables**
 
-Journals use OpenAI to generate self-reflective content using your entry’s title, mood, and body. Ensure your OPENAI_API_KEY is valid and you have credits.
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://user:pass@localhost:5432/mindvault
 
-⸻
+# Authentication
+SECRET_KEY=your-cryptographically-secure-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-🛠 Dev Notes
-	•	Run alembic revision --autogenerate -m "your message" to generate migrations
-	•	Use .env to store sensitive credentials
-	•	Use reset_db.sh (optional) to nuke and reset the DB locally
+# AI Integration
+OPENAI_API_KEY=your-openai-api-key
 
-⸻
+# Application Settings
+DEBUG=False
+```
 
-❤️ Built With Purpose
+### **Multi-Environment Support**
+- **Development**: SQLite with debug logging
+- **Testing**: In-memory database with fixtures
+- **Production**: PostgreSQL with connection pooling
+- **Docker**: Container-optimized configuration
 
-MindVault was crafted to help you reflect, grow, and track your mental clarity — one journal entry at a time.
+---
 
+## 🚀 **Production Deployment**
+
+### **Docker Compose Services**
+```yaml
+services:
+  api:          # FastAPI backend with health checks
+  db:           # PostgreSQL with persistent storage
+  pgadmin:      # Database administration interface
+```
+
+### **Deployment Features**
+- **Health Monitoring**: Comprehensive endpoint monitoring
+- **Database Persistence**: Volume-backed PostgreSQL storage
+- **Service Discovery**: Container networking with DNS resolution
+- **Port Management**: Configurable service exposure
+- **Log Aggregation**: Centralized container logging
+
+---
+
+## 💼 **Enterprise-Ready Features**
+
+### **Scalability Considerations**
+- **Stateless Design**: Horizontal scaling ready
+- **Connection Pooling**: Efficient database resource usage
+- **Async Operations**: Non-blocking I/O for high concurrency
+- **Modular Architecture**: Microservice decomposition ready
+
+### **Monitoring & Observability**
+- **Health Endpoints**: System status and metrics
+- **Structured Logging**: JSON-formatted application logs
+- **Error Tracking**: Comprehensive exception handling
+- **Performance Metrics**: Response time and resource monitoring
+
+### **Security Best Practices**
+- **JWT Token Management**: Secure authentication with expiration
+- **Input Sanitization**: SQL injection and XSS prevention
+- **Rate Limiting**: API abuse protection
+- **Container Security**: Non-root execution and minimal privileges
+
+---
+
+## 🔮 **Architecture Evolution Path**
+
+### **Immediate Enhancements**
+- **Redis Caching**: Session storage and performance optimization
+- **Background Tasks**: Celery integration for AI processing
+- **API Versioning**: Backward compatibility support
+- **Request Logging**: Comprehensive audit trails
+
+### **Advanced Integrations**
+- **Kubernetes**: Container orchestration and auto-scaling
+- **Prometheus + Grafana**: Metrics collection and visualization
+- **ELK Stack**: Centralized logging and analysis
+- **CI/CD Pipeline**: Automated testing and deployment
+
+---
+
+## 📚 **Documentation & API Reference**
+
+- **Interactive API Docs**: Available at `/docs` (Swagger UI)
+- **Alternative Docs**: Available at `/redoc` (ReDoc)
+- **Health Monitoring**: Real-time status at `/health/detailed`
+- **OpenAPI Schema**: Machine-readable API specification
+
+---
+
+## 🤝 **Development Best Practices**
+
+This project demonstrates professional development standards:
+
+- ✅ **Type Safety**: Full type hints with mypy compatibility
+- ✅ **Code Quality**: Consistent formatting and linting
+- ✅ **Test Coverage**: Comprehensive unit and integration tests
+- ✅ **Documentation**: Self-documenting code with clear APIs
+- ✅ **Security**: Production-ready authentication and validation
+- ✅ **Monitoring**: Comprehensive health and performance tracking
+
+---
+
+## 🎯 **Built for Portfolio Excellence**
+
+MindVault showcases:
+
+- **Advanced Python Skills**: FastAPI, async programming, type hints
+- **Database Expertise**: Complex queries, migrations, optimization
+- **AI Integration**: OpenAI API, intelligent content analysis
+- **DevOps Proficiency**: Docker, containerization, health monitoring
+- **Production Readiness**: Security, scalability, monitoring
+- **Code Quality**: Testing, documentation, professional structure
+
+---
+
+**💡 This project demonstrates enterprise-level backend engineering with modern Python, comprehensive testing, AI integration, and production-ready DevOps practices.**
