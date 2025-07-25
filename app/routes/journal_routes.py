@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
-from app.schemas.journal_schemas import JournalEntryCreate, JournalEntryResponse 
+from app.schemas.journal_schemas import JournalEntryCreate, JournalEntryResponse
 from slowapi.util import get_remote_address
 from fastapi import Request
 from app.limiter import limiter
@@ -19,6 +19,7 @@ router = APIRouter(tags=["Journal"])
 
 
 from app.ai.openai_utils import ask_gpt as generate_ai_response  # 🔥 Import
+
 
 @router.post("/journals")
 @limiter.limit("5/minute")
@@ -41,7 +42,7 @@ def create_journal(
             content=entry.content,
             mood=entry.mood,
             reflection=reflection,
-            user_id=user.id
+            user_id=user.id,
         )
         session.add(new_entry)
         session.commit()
@@ -116,8 +117,7 @@ def filter_journals(
         if search:
             pattern = f"%{search.lower()}%"
             statement = statement.where(
-                JournalEntry.title.ilike(pattern)
-                | JournalEntry.content.ilike(pattern)
+                JournalEntry.title.ilike(pattern) | JournalEntry.content.ilike(pattern)
             )
         if start_date:
             statement = statement.where(JournalEntry.created_at >= start_date)
@@ -130,8 +130,7 @@ def filter_journals(
 
         if not results:
             raise HTTPException(
-                status_code=404,
-                detail="No entries match the given filters"
+                status_code=404, detail="No entries match the given filters"
             )
         return results
 
@@ -173,21 +172,23 @@ def get_mood_trends(user=Depends(get_current_user)):
             mood_trends[day][e.mood] += 1
 
     return [
-        {"date": day, "moods": counts}
-        for day, counts in sorted(mood_trends.items())
+        {"date": day, "moods": counts} for day, counts in sorted(mood_trends.items())
     ]
 
 
 @router.get("/journals/streak")
 def get_journal_streak(user=Depends(get_current_user)):
     with Session(engine) as session:
-        dates = sorted({
-            ent.created_at.date()
-            for ent in session.exec(
-                select(JournalEntry.created_at)
-                .where(JournalEntry.user_id == user.id)
-            ).all()
-        })
+        dates = sorted(
+            {
+                ent.created_at.date()
+                for ent in session.exec(
+                    select(JournalEntry.created_at).where(
+                        JournalEntry.user_id == user.id
+                    )
+                ).all()
+            }
+        )
 
     if not dates:
         return {"current_streak": 0, "longest_streak": 0}
@@ -236,10 +237,9 @@ def seven_day_summary(user=Depends(get_current_user)):
     last_week = [today - timedelta(days=i) for i in range(6, -1, -1)]
     with Session(engine) as session:
         entries = session.exec(
-            select(JournalEntry)
-            .where(
+            select(JournalEntry).where(
                 JournalEntry.user_id == user.id,
-                JournalEntry.created_at >= today - timedelta(days=6)
+                JournalEntry.created_at >= today - timedelta(days=6),
             )
         ).all()
 
@@ -248,6 +248,8 @@ def seven_day_summary(user=Depends(get_current_user)):
         d = e.created_at.date().isoformat()
         grp = summary[d]
         grp["count"] += 1
-        grp["moods"][e.mood or "unspecified"] = grp["moods"].get(e.mood or "unspecified", 0) + 1
+        grp["moods"][e.mood or "unspecified"] = (
+            grp["moods"].get(e.mood or "unspecified", 0) + 1
+        )
 
     return {"last_7_days": summary}

@@ -16,19 +16,19 @@ from app.error_handlers import register_exception_handlers
 from app.routes.health_routes import router as health_router
 
 
-
 app = FastAPI(
     title="MindVault API",
     version="1.0.0",
     description="Secure Journal & Auth API",
     openapi_tags=[
-        {"name": "Auth",    "description": "Register & login"},
-        {"name": "Users",   "description": "User profile"},
+        {"name": "Auth", "description": "Register & login"},
+        {"name": "Users", "description": "User profile"},
         {"name": "Journal", "description": "Journal entries & insights"},
     ],
 )
 
 register_exception_handlers(app)
+
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -36,6 +36,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
         status_code=429,
         content={"detail": "Rate limit exceeded. Please try again later."},
     )
+
 
 # ✅ Add CORS middleware
 app.add_middleware(
@@ -45,6 +46,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ✅ Secure custom OpenAPI with bearer token support
 def custom_openapi():
@@ -57,17 +59,14 @@ def custom_openapi():
         routes=app.routes,
     )
     schema["components"]["securitySchemes"] = {
-        "bearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        }
+        "bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
     }
     for path in schema["paths"].values():
         for op in path.values():
             op.setdefault("security", [{"bearerAuth": []}])
     app.openapi_schema = schema
     return schema
+
 
 app.openapi = custom_openapi
 

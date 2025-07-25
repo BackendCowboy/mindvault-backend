@@ -3,10 +3,12 @@ from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
 
+
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str
     hashed_password: str
+
 
 class JournalEntry(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -19,13 +21,16 @@ class JournalEntry(SQLModel, table=True):
 
     reflection: Optional[str] = Field(default=None)
 
+
 class UserCreate(SQLModel):
     email: str
     password: str
 
+
 class UserRead(SQLModel):
     id: int
     email: str
+
 
 class JournalEntryUpdate(SQLModel):
     title: Optional[str] = None

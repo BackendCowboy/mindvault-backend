@@ -22,17 +22,24 @@ logger.info(f"OAuth2PasswordBearer configured with tokenUrl: /auth/login")
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
+
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    logger.info(f"get_current_user called with token: {token[:20] if token else 'None'}...")
+    logger.info(
+        f"get_current_user called with token: {token[:20] if token else 'None'}..."
+    )
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Not authenticated",
@@ -40,19 +47,20 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.info(f"Decoded payload: {payload}") 
+        logger.info(f"Decoded payload: {payload}")
         email: str = payload.get("sub")
         if not email:
             raise credentials_exception
         with Session(engine) as session:
             user = session.exec(select(User).where(User.email == email)).first()
-            logger.info(f"Found user: {user.email if user else 'None'}")  
+            logger.info(f"Found user: {user.email if user else 'None'}")
             if not user:
                 raise credentials_exception
             return user
     except JWTError as e:
-        logger.info(f"JWT Error: {e}")  
+        logger.info(f"JWT Error: {e}")
         raise credentials_exception
+
 
 def register_user(user_data: UserCreate):
     with Session(engine) as session:
@@ -62,6 +70,7 @@ def register_user(user_data: UserCreate):
         session.commit()
         session.refresh(db_user)
         return db_user
+
 
 def authenticate_user(email: str, password: str):
     with Session(engine) as session:

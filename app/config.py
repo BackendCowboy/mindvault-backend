@@ -8,8 +8,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 
 # Database
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "sqlite:///journal.db"  # Fallback to SQLite for development
+    "DATABASE_URL", "sqlite:///journal.db"  # Fallback to SQLite for development
 )
 
 # Environment
