@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from app.routes.ai_routes import router as ai_router
 from app.error_handlers import register_exception_handlers
+from app.routes.health_routes import router as health_router
 
 
 
@@ -78,3 +79,4 @@ app.include_router(journal_router)
 app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.include_router(ai_router)
+app.include_router(health_router)
