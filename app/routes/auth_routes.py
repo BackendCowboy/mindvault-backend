@@ -1,7 +1,6 @@
 # app/auth_routes.py
 from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from slowapi.util import get_remote_address
 from app.limiter import limiter
 
 from app.models import UserCreate, UserRead

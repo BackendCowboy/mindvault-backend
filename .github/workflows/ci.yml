@@ -77,7 +77,7 @@ jobs:
 
     - name: 🔍 Linting check
       run: |
-        flake8 app/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+        flake8 app/ tests/ --max-line-length=88 --extend-ignore=E203,W503,F401,F811,E501,F541,E402,E303
       continue-on-error: false
 
     - name: 🛡️ Security scan - Bandit

@@ -4,7 +4,7 @@ from sqlmodel import Session, text
 from datetime import datetime
 import psutil
 import os
-from app.database import get_session, check_db_connection
+from app.database import get_session
 from app.config import DATABASE_URL
 
 router = APIRouter(tags=["Health"])

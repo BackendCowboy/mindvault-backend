@@ -18,7 +18,6 @@ else:
 
 def create_db_and_tables():
     """Create database tables"""
-    from app.models import User, JournalEntry
 
     SQLModel.metadata.create_all(engine)
 

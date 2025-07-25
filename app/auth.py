@@ -53,12 +53,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
         with Session(engine) as session:
             user = session.exec(select(User).where(User.email == email)).first()
-            logger.info(f"Found user: {user.email if user else 'None'}")
+            logger.info("Found user: " + (user.email if user else "None"))
             if not user:
                 raise credentials_exception
             return user
     except JWTError as e:
-        logger.info(f"JWT Error: {e}")
+        logger.info("JWT Error: " + str(e))
         raise credentials_exception
 
 

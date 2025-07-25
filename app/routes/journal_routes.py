@@ -1,24 +1,20 @@
 # app/journal_routes.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from collections import Counter, defaultdict
 from app.schemas.journal_schemas import JournalEntryCreate, JournalEntryResponse
-from slowapi.util import get_remote_address
 from fastapi import Request
 from app.limiter import limiter
 from app.ai.openai_utils import ask_gpt as generate_ai_response
 
-from app.models import JournalEntry, JournalEntryUpdate, User
+from app.models import JournalEntry, JournalEntryUpdate
 from app.database import engine
 from app.auth import get_current_user
 
 router = APIRouter(tags=["Journal"])
-
-
-from app.ai.openai_utils import ask_gpt as generate_ai_response  # 🔥 Import
 
 
 @router.post("/journals")

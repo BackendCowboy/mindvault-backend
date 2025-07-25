@@ -1,6 +1,4 @@
-from fastapi.testclient import TestClient
 import uuid
-from app.main import app
 
 
 def test_register_and_login(client):
