@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-
-# from sqlmodel import SQLModel
-# from app.database import engine
+from app.database import create_db_and_tables  # Add this import
 from app.routes.auth_routes import router as auth_router
 from app.routes.user_routes import router as user_router
 from app.routes.journal_routes import router as journal_router
@@ -27,6 +25,9 @@ app = FastAPI(
     ],
 )
 
+# ✅ Create database tables on startup
+create_db_and_tables()
+
 # ✅ Add CORS middleware FIRST (before other middleware)
 app.add_middleware(
     CORSMiddleware,
@@ -42,14 +43,12 @@ app.add_middleware(
 
 register_exception_handlers(app)
 
-
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
         status_code=429,
         content={"detail": "Rate limit exceeded. Please try again later."},
     )
-
 
 # ✅ Secure custom OpenAPI with bearer token support
 def custom_openapi():
@@ -69,7 +68,6 @@ def custom_openapi():
             op.setdefault("security", [{"bearerAuth": []}])
     app.openapi_schema = schema
     return schema
-
 
 app.openapi = custom_openapi
 
