@@ -31,13 +31,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://mindvault-frontend-g2xvlbe27-bigfuals-projects.vercel.app",  # Your current Vercel URL
-        "https://*.vercel.app",  # All Vercel subdomains
-        "https://mindvault-frontend-bigfuals-projects.vercel.app",  # Alternative Vercel URL format
+        "http://localhost:3000",
+        "https://mindvault-frontend.vercel.app",  # Your exact Vercel URL
+        "*"  # Temporary wildcard to ensure it works
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
