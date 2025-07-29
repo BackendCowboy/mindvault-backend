@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-
 # from sqlmodel import SQLModel
 # from app.database import engine
 from app.routes.auth_routes import router as auth_router
@@ -16,7 +15,6 @@ from app.routes.ai_routes import router as ai_router
 from app.error_handlers import register_exception_handlers
 from app.routes.health_routes import router as health_router
 
-
 app = FastAPI(
     title="MindVault API",
     version="1.0.0",
@@ -28,8 +26,21 @@ app = FastAPI(
     ],
 )
 
-register_exception_handlers(app)
+# ✅ Add CORS middleware FIRST (before other middleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",  # Local development
+        "https://mindvault-frontend-g2xvlbe27-bigfuals-projects.vercel.app",  # Your current Vercel URL
+        "https://*.vercel.app",  # All Vercel subdomains
+        "https://mindvault-frontend-bigfuals-projects.vercel.app",  # Alternative Vercel URL format
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
+register_exception_handlers(app)
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -37,17 +48,6 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
         status_code=429,
         content={"detail": "Rate limit exceeded. Please try again later."},
     )
-
-
-# ✅ Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Replace with your frontend URL in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 # ✅ Secure custom OpenAPI with bearer token support
 def custom_openapi():
@@ -68,15 +68,15 @@ def custom_openapi():
     app.openapi_schema = schema
     return schema
 
-
 app.openapi = custom_openapi
-
 
 # ✅ Add routers
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(journal_router)
-app.add_middleware(SlowAPIMiddleware)
-app.state.limiter = limiter
 app.include_router(ai_router)
 app.include_router(health_router)
+
+# ✅ Add rate limiting middleware AFTER CORS
+app.add_middleware(SlowAPIMiddleware)
+app.state.limiter = limiter
