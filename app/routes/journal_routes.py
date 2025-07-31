@@ -57,45 +57,7 @@ def get_journals(user=Depends(get_current_user)):
         return session.exec(statement).all()
 
 
-@router.get("/journals/{entry_id}", response_model=JournalEntryResponse)
-def get_journal(entry_id: int, user=Depends(get_current_user)):
-    with Session(engine) as session:
-        entry = session.get(JournalEntry, entry_id)
-        if not entry or entry.user_id != user.id:
-            raise HTTPException(status_code=404, detail="Entry not found")
-        return entry
-
-
-@router.put("/journals/{entry_id}")
-def update_journal(
-    entry_id: int,
-    updated: JournalEntryUpdate,
-    user=Depends(get_current_user),
-):
-    with Session(engine) as session:
-        entry = session.get(JournalEntry, entry_id)
-        if not entry or entry.user_id != user.id:
-            raise HTTPException(status_code=404, detail="Entry not found")
-        entry.title = updated.title
-        entry.content = updated.content
-        entry.mood = updated.mood
-        session.add(entry)
-        session.commit()
-        session.refresh(entry)
-        return {"message": f"Entry {entry_id} updated", "entry": entry}
-
-
-@router.delete("/journals/{entry_id}")
-def delete_journal(entry_id: int, user=Depends(get_current_user)):
-    with Session(engine) as session:
-        entry = session.get(JournalEntry, entry_id)
-        if not entry or entry.user_id != user.id:
-            raise HTTPException(status_code=404, detail="Entry not found")
-        session.delete(entry)
-        session.commit()
-        return {"message": f"Entry {entry_id} deleted"}
-
-
+# ✅ PUT ALL SPECIFIC ROUTES BEFORE PARAMETERIZED ROUTES
 @router.get("/journals/filter", response_model=List[JournalEntryResponse])
 def filter_journals(
     user=Depends(get_current_user),
@@ -249,3 +211,43 @@ def seven_day_summary(user=Depends(get_current_user)):
         )
 
     return {"last_7_days": summary}
+
+
+# ✅ PUT PARAMETERIZED ROUTES LAST
+@router.get("/journals/{entry_id}", response_model=JournalEntryResponse)
+def get_journal(entry_id: int, user=Depends(get_current_user)):
+    with Session(engine) as session:
+        entry = session.get(JournalEntry, entry_id)
+        if not entry or entry.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        return entry
+
+
+@router.put("/journals/{entry_id}")
+def update_journal(
+    entry_id: int,
+    updated: JournalEntryUpdate,
+    user=Depends(get_current_user),
+):
+    with Session(engine) as session:
+        entry = session.get(JournalEntry, entry_id)
+        if not entry or entry.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        entry.title = updated.title
+        entry.content = updated.content
+        entry.mood = updated.mood
+        session.add(entry)
+        session.commit()
+        session.refresh(entry)
+        return {"message": f"Entry {entry_id} updated", "entry": entry}
+
+
+@router.delete("/journals/{entry_id}")
+def delete_journal(entry_id: int, user=Depends(get_current_user)):
+    with Session(engine) as session:
+        entry = session.get(JournalEntry, entry_id)
+        if not entry or entry.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        session.delete(entry)
+        session.commit()
+        return {"message": f"Entry {entry_id} deleted"}
