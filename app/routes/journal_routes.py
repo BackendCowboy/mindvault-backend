@@ -150,15 +150,32 @@ def get_journal_streak(user=Depends(get_current_user)):
 
     if not dates:
         return {"current_streak": 0, "longest_streak": 0}
+    
+    # Handle single entry case
+    if len(dates) == 1:
+        today = datetime.utcnow().date()
+        # Check if the single entry is from today or yesterday
+        days_ago = (today - dates[0]).days
+        if days_ago <= 1:  # Today or yesterday
+            return {"current_streak": 1, "longest_streak": 1}
+        else:
+            return {"current_streak": 0, "longest_streak": 1}
 
+    # Handle multiple entries
     longest = current = 1
     today = datetime.utcnow().date()
-    for prev, curr in zip(dates, dates[1:]):
-        if (curr - prev).days == 1:
+    
+    for i in range(1, len(dates)):
+        prev_date = dates[i-1]
+        curr_date = dates[i]
+        
+        if (curr_date - prev_date).days == 1:
             current += 1
             longest = max(longest, current)
         else:
             current = 1
+    
+    # Check if current streak is still active
     if (today - dates[-1]).days > 1:
         current = 0
 
